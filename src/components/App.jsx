@@ -1,47 +1,60 @@
+
 import React, { Component } from 'react';
-import { Searchbar } from './Searchbar/Searchbar'
-import * as API from '../components/API/Api';
+import ImageGallery from './ImageGallery/ImageGallery';
+import { Searchbar } from './Searchbar/Searchbar';
+import * as Api from '../components/API/Api';
+import Button from './Button/Button';
+import Modal from './Modal/Modal';
 import { Container } from './App.module';
+import Loader from './Loader/Loader';
 
 
 
 
-
-
-export class App extends Component {
+export  class App extends Component {
   state = {
+    page: 1,
     query: '',
     items: [],
-    page: 1,
-    loader: false,
-    error: null,
+    largeImageURL: '',
+    isLoading: false,
     totalPages: 0,
-  }
+    error: null,
+     
+  };
 
   loadImages = async (query, page) => {
-    this.setState({ loader: true });
+    this.setState({ isLoading: true });
 
     try {
-      const data = await API.fetchImages(query, page);
+      const data = await Api.fetchImages(query, page);
+       if (data.hits.length === 0) {
+        this.setState({
+          error: {
+            message: `Sorry, there are no images matching   '${query}'. Please try again.`,
+            
+          },
+        });
+        return;
+      }
       this.setState(prevState => ({
         items: [...prevState.items, ...data.hits],
-        
         totalPages: data.totalHits,
       }));
+
+     
       
     } catch (error) {
       this.setState({ error });
+
     } finally {
       this.setState({ isLoading: false });
 
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: 'smooth',
-      });
+      
     }
   };
 
- componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps, prevState) {
     const { query, page } = this.state;
     if (prevState.query !== query || prevState.page !== page) {
       this.loadImages(query, page);
@@ -72,13 +85,15 @@ export class App extends Component {
   };
 
   render() {
-    const { items, isLoading, largeImageURL, error, page, totalPages } =
+    const { items, isLoading, largeImageURL, error, page, totalPages,  } =
       this.state;
+    
     return (
       <Container>
-        <Searchbar onSearch={this.handleSearchSubmit} />
+        <Searchbar onSearch={this.handleSearchSubmit} />   
+        
         {error && <p>Whoops, something went wrong: {error.message}</p>}
-
+        
         {items.length > 0 && (
           <ImageGallery items={items} onClick={this.onOpenModal} />
         )}
@@ -90,7 +105,9 @@ export class App extends Component {
         {largeImageURL && (
           <Modal onClose={this.onCloseModal} largeImageURL={largeImageURL} />
         )}
+        
       </Container>
+      
     );
   }
 }

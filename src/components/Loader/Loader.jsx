@@ -12,7 +12,7 @@ export default function Loader() {
   wrapperStyle={{}}
   wrapperClass="comment-wrapper"
   color="#fff"
-  backgroundColor="#F4442E"
+  backgroundColor="#black"
 />
     </LoaderWrapp>
   );
